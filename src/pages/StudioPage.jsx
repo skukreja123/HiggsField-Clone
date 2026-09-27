@@ -3,8 +3,8 @@ import { apiRequest } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const defaultForm = {
-  prompt: 'Cinematic luxury product shot of a premium watch resting on dark velvet with soft gold highlights and dramatic studio lighting.',
-  negativePrompt: 'blurry, low detail, distorted product, text, watermark',
+  prompt: 'Cinematic close-up portrait of a confident woman with soft natural makeup, elegant dark fashion styling, dramatic studio lighting, and a premium editorial mood.',
+  negativePrompt: 'blurry, low detail, distorted face, text, watermark',
   referenceImage: '',
   model: 'cinematic',
   preset: 'cinematic',

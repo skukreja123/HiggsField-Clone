@@ -36,8 +36,8 @@ const categoryPools = {
 
 const pickFallbackPool = (prompt = '') => {
   const lowered = prompt.toLowerCase();
+  if (/(portrait|woman|model|fashion|beauty|face|makeup|editorial|hairstyle)/.test(lowered)) return categoryPools.fashion;
   if (/(watch|luxury|gold|product|premium)/.test(lowered)) return categoryPools.luxury;
-  if (/(fashion|model|outfit|styling|dress|clothing)/.test(lowered)) return categoryPools.fashion;
   if (/(architecture|interior|room|home|building|villa)/.test(lowered)) return categoryPools.architecture;
   if (/(product|render|object|bottle|packaging|device)/.test(lowered)) return categoryPools.product;
   return sampleResults;
