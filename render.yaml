@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: 8x-api
+    env: node
+    plan: free
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_TTL
+        value: 86400
+      - key: IMAGE_PROVIDER
+        value: stability
+      - key: VIDEO_PROVIDER
+        value: demo
+      - key: STABILITY_API_KEY
+        sync: false
+      - key: STABILITY_API_URL
+        value: https://api.stability.ai
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
