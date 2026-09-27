@@ -1,0 +1,76 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "prompt": "Cinematic product still with warm gold lighting",
+    "negativePrompt": "blurry",
+    "referenceImage": "",
+    "model": "cinematic",
+    "preset": "premium",
+    "aspectRatio": "16:9",
+    "resolution": "1024x1024",
+    "quality": "high",
+    "generationCount": 1,
+    "styleSettings": {},
+    "status": "completed",
+    "outputs": [
+      {
+        "id": "demo-1790492505594-0",
+        "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+        "prompt": "Cinematic product still with warm gold lighting",
+        "negativePrompt": "blurry",
+        "aspectRatio": "16:9",
+        "resolution": "1024x1024",
+        "seed": 64533
+      }
+    ],
+    "selectedOutput": {
+      "id": "demo-1790492505594-0",
+      "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+      "prompt": "Cinematic product still with warm gold lighting",
+      "negativePrompt": "blurry",
+      "aspectRatio": "16:9",
+      "resolution": "1024x1024",
+      "seed": 64533
+    },
+    "createdAt": "2026-09-27T07:01:45.592Z",
+    "updatedAt": "2026-09-27T07:01:45.597Z"
+  },
+  {
+    "id": 2,
+    "userId": 4,
+    "prompt": "Cinematic luxury product shot of a premium watch resting on dark velvet with soft gold highlights and dramatic studio lighting.",
+    "negativePrompt": "blurry, low detail, distorted product, text, watermark",
+    "referenceImage": "",
+    "model": "cinematic",
+    "preset": "premium",
+    "aspectRatio": "16:9",
+    "resolution": "1024x1024",
+    "quality": "high",
+    "generationCount": 1,
+    "styleSettings": {},
+    "status": "completed",
+    "outputs": [
+      {
+        "id": "demo-1790493321643-0",
+        "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+        "prompt": "Cinematic luxury product shot of a premium watch resting on dark velvet with soft gold highlights and dramatic studio lighting.",
+        "negativePrompt": "blurry, low detail, distorted product, text, watermark",
+        "aspectRatio": "16:9",
+        "resolution": "1024x1024",
+        "seed": 16865
+      }
+    ],
+    "selectedOutput": {
+      "id": "demo-1790493321643-0",
+      "url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80",
+      "prompt": "Cinematic luxury product shot of a premium watch resting on dark velvet with soft gold highlights and dramatic studio lighting.",
+      "negativePrompt": "blurry, low detail, distorted product, text, watermark",
+      "aspectRatio": "16:9",
+      "resolution": "1024x1024",
+      "seed": 16865
+    },
+    "createdAt": "2026-09-27T07:15:21.643Z",
+    "updatedAt": "2026-09-27T07:15:21.646Z"
+  }
+]
