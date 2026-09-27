@@ -70,9 +70,13 @@ export function StudioPage() {
       setGenerations(nextGenerations);
 
       if (nextGenerations.length) {
-        const nextGeneration = nextGenerations.find((item) => item.id === selectedGenerationId) || nextGenerations[0];
-        setSelectedGenerationId(nextGeneration.id);
-        setSelectedOutputId(resolveSelectedOutputId(nextGeneration, selectedOutputId));
+        setSelectedGenerationId((currentSelectedGenerationId) => {
+          const existingGeneration = nextGenerations.find((item) => item.id === currentSelectedGenerationId);
+          const nextGeneration = existingGeneration || nextGenerations[0];
+
+          setSelectedOutputId((currentSelectedOutputId) => resolveSelectedOutputId(nextGeneration, currentSelectedOutputId));
+          return nextGeneration.id;
+        });
       } else {
         setSelectedGenerationId(null);
         setSelectedOutputId(null);
@@ -82,12 +86,19 @@ export function StudioPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedGenerationId, selectedOutputId]);
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!user) {
+      setGenerations([]);
+      setSelectedGenerationId(null);
+      setSelectedOutputId(null);
+      setIsLoading(false);
+      return;
+    }
+
     fetchGenerations();
-  }, [fetchGenerations]);
+  }, [user?.id, fetchGenerations]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

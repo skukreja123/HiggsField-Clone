@@ -1009,10 +1009,15 @@ img {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(11, 15, 20, 0.9);
   color: var(--text);
   padding: 0.9rem 1rem;
   resize: vertical;
+}
+
+.field-group select option {
+  background: rgba(12, 16, 22, 0.98);
+  color: var(--text);
 }
 
 .field-group textarea {
