@@ -2,10 +2,14 @@ import { getAuthHeader } from './auth';
 
 const buildUrl = (path) => {
   const baseUrl = import.meta.env.VITE_API_URL || '';
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
   if (!path.startsWith('http') && baseUrl) {
-    return `${baseUrl.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
+    const apiPath = normalizedPath.startsWith('/api') ? normalizedPath : `/api${normalizedPath}`;
+    return `${baseUrl.replace(/\/$/, '')}${apiPath}`;
   }
-  return path.startsWith('http') ? path : `/api${path}`;
+
+  return path.startsWith('http') ? path : `/api${normalizedPath}`;
 };
 
 export async function apiRequest(path, options = {}) {
