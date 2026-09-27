@@ -52,8 +52,6 @@ export class StabilityImageProvider extends BaseGenerationProvider {
       'tile-texture',
     ]);
 
-    const fallback = () => new DemoImageProvider().submit(payload);
-
     try {
       const formData = new FormData();
       formData.append('prompt', payload.prompt || '');
