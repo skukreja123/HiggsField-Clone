@@ -89,13 +89,20 @@ export class GenerationService {
       })));
     }
 
+    const providerName = providerResult.provider || 'demo';
+    const sourceMessage = providerName === 'stability'
+      ? 'Using Stability AI for this generation.'
+      : (providerResult.message || 'No Stability API key found. Demo generation is active.');
+
     return {
       generation: {
         ...finalRecord,
         outputs: normalizedOutputs,
         selectedOutput: normalizedOutputs[0] || null,
+        provider: providerName,
       },
-      message: `${type === 'video' ? 'Video' : 'Image'} generation completed successfully.`,
+      message: sourceMessage,
+      provider: providerName,
     };
   }
 

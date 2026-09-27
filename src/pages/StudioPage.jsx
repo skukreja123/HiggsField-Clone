@@ -35,6 +35,7 @@ export function StudioPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [generationMessage, setGenerationMessage] = useState('');
   const [generations, setGenerations] = useState([]);
   const [selectedGenerationId, setSelectedGenerationId] = useState(null);
   const [selectedOutputId, setSelectedOutputId] = useState(null);
@@ -125,6 +126,7 @@ export function StudioPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setGenerationMessage('');
     setIsGenerating(true);
 
     try {
@@ -137,6 +139,11 @@ export function StudioPage() {
         setSelectedGenerationId(response.generation.id);
       }
 
+      const message = response.provider === 'stability'
+        ? 'Using Stability AI for this generation.'
+        : (response.message || 'No Stability API key found. Demo generation is active.');
+      setGenerationMessage(message);
+
       await fetchGenerations();
     } catch (submitError) {
       setError(submitError.message || 'Unable to generate your concept.');
@@ -148,6 +155,7 @@ export function StudioPage() {
   const handleVideoSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setGenerationMessage('');
     setIsGenerating(true);
 
     try {
@@ -162,6 +170,11 @@ export function StudioPage() {
       if (response.generation?.id) {
         setSelectedGenerationId(response.generation.id);
       }
+
+      const message = response.provider === 'stability'
+        ? 'Using Stability AI for this generation.'
+        : (response.message || 'No Stability API key found. Demo generation is active.');
+      setGenerationMessage(message);
 
       await fetchGenerations();
     } catch (submitError) {
@@ -181,6 +194,7 @@ export function StudioPage() {
   };
 
   const isVideoGeneration = currentGeneration?.type === 'video';
+  const providerLabel = currentGeneration?.provider === 'stability' ? 'Stability AI' : 'Demo fallback';
 
   return (
     <div className="studio-page-shell">
@@ -404,6 +418,7 @@ export function StudioPage() {
               </div>
 
               {error ? <div className="form-message error">{error}</div> : null}
+              {generationMessage ? <div className="form-message info">{generationMessage}</div> : null}
 
               <button type="submit" className="primary-button full-width" disabled={isGenerating}>
                 {isGenerating ? 'Generating…' : 'Generate concept'}
@@ -499,6 +514,9 @@ export function StudioPage() {
           ) : (
             <>
               <div className="featured-output">
+                <div className={`output-source-badge ${currentGeneration?.provider === 'stability' ? 'stability' : 'demo'}`}>
+                  {providerLabel}
+                </div>
                 {isVideoGeneration ? (
                   <video controls src={featuredOutput?.url} poster={featuredOutput?.thumbnailUrl || featuredOutput?.url} />
                 ) : (
@@ -518,6 +536,9 @@ export function StudioPage() {
                     }}
                     aria-label="Select output"
                   >
+                    <span className={`mini-source-badge ${currentGeneration?.provider === 'stability' ? 'stability' : 'demo'}`}>
+                      {currentGeneration?.provider === 'stability' ? 'AI' : 'Demo'}
+                    </span>
                     {isVideoGeneration ? (
                       <video controls src={item.url} poster={item.thumbnailUrl || item.url} />
                     ) : (

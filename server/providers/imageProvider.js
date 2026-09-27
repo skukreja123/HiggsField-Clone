@@ -6,7 +6,7 @@ export class ImageGenerationProvider extends BaseGenerationProvider {
   static create() {
     const provider = config.imageProvider;
 
-    if (provider === 'stability') {
+    if (provider === 'stability' && config.stabilityApiKey) {
       return new StabilityImageProvider();
     }
 
@@ -22,8 +22,14 @@ export class StabilityImageProvider extends BaseGenerationProvider {
   }
 
   async submit(payload) {
+    const fallback = (reason = 'No Stability API key found. Demo generation is active.') => ({
+      ...new DemoImageProvider().submit(payload),
+      provider: 'demo',
+      message: reason,
+    });
+
     if (!this.apiKey) {
-      return new DemoImageProvider().submit(payload);
+      return fallback();
     }
 
     const allowedStyles = new Set([
@@ -75,7 +81,7 @@ export class StabilityImageProvider extends BaseGenerationProvider {
         const text = await response.text();
         const message = text || response.statusText || '';
         if (response.status === 402 || response.status === 401 || response.status === 403 || response.status === 429 || /credit|payment|insufficient/i.test(message)) {
-          return fallback();
+          return fallback('Stability API rejected the request or ran out of credits. Demo generation is active.');
         }
         throw new Error(`Provider request failed: ${response.status} ${message}`);
       }
@@ -105,7 +111,7 @@ export class StabilityImageProvider extends BaseGenerationProvider {
     } catch (error) {
       const message = String(error?.message || '');
       if (/credit|payment|insufficient|402|401|403|429|fetch/i.test(message)) {
-        return fallback();
+        return fallback('Stability API is unavailable. Demo generation is active.');
       }
       throw error;
     }

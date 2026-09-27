@@ -1044,6 +1044,12 @@ img {
   color: #ffd4d4;
 }
 
+.form-message.info {
+  background: rgba(90, 153, 255, 0.08);
+  border: 1px solid rgba(90, 153, 255, 0.28);
+  color: #dfeeff;
+}
+
 .password-panel {
   display: grid;
   gap: 12px;
@@ -1338,6 +1344,7 @@ img {
 }
 
 .result-thumb {
+  position: relative;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   overflow: hidden;
@@ -1349,6 +1356,48 @@ img {
 .result-thumb:hover {
   transform: translateY(-2px);
   border-color: rgba(217, 183, 125, 0.45);
+}
+
+.featured-output .output-source-badge,
+.result-thumb .mini-source-badge {
+  position: absolute;
+  z-index: 2;
+  right: 12px;
+  top: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.32rem 0.7rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.featured-output .output-source-badge {
+  right: 12px;
+  top: 12px;
+}
+
+.result-thumb .mini-source-badge {
+  right: 8px;
+  top: 8px;
+}
+
+.featured-output .output-source-badge.stability,
+.result-thumb .mini-source-badge.stability {
+  background: rgba(93, 171, 255, 0.14);
+  border: 1px solid rgba(93, 171, 255, 0.32);
+  color: #d8ecff;
+}
+
+.featured-output .output-source-badge.demo,
+.result-thumb .mini-source-badge.demo {
+  background: rgba(255, 198, 92, 0.12);
+  border: 1px solid rgba(255, 198, 92, 0.35);
+  color: #ffe6ad;
 }
 
 .result-thumb img,

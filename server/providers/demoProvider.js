@@ -28,14 +28,17 @@ const categoryPools = {
     'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=80',
   ],
   architecture: [
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
     'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
     'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
     'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
   ],
 };
 
 const pickFallbackPool = (prompt = '') => {
   const lowered = prompt.toLowerCase();
+  if (/(glass house|glass|mountain|landscape|sunset|architectural|villa|residence|modern home|overlooking|cabin|view|luxury home|premium villa)/.test(lowered)) return categoryPools.architecture;
   if (/(portrait|woman|model|fashion|beauty|face|makeup|editorial|hairstyle)/.test(lowered)) return categoryPools.fashion;
   if (/(watch|luxury|gold|product|premium)/.test(lowered)) return categoryPools.luxury;
   if (/(architecture|interior|room|home|building|villa)/.test(lowered)) return categoryPools.architecture;
@@ -61,7 +64,7 @@ export class DemoImageProvider extends BaseGenerationProvider {
       status: 'completed',
       outputs,
       provider: 'demo',
-      message: 'Demo generation completed successfully.',
+      message: 'No Stability API key found. Demo generation is active.',
     };
   }
 
