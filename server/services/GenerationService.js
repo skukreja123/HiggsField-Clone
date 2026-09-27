@@ -25,6 +25,11 @@ export class GenerationService {
 
   async submitGeneration({ userId, type = 'image', ...payload }) {
     const provider = type === 'video' ? this.videoProvider : this.imageProvider;
+    const settings = {
+      ...(payload.settings || {}),
+      referenceImage: payload.referenceImage || payload.settings?.referenceImage || null,
+      generationCount: payload.generationCount || payload.count || 1,
+    };
 
     const generation = await generationRepository.create({
       userId,
@@ -36,7 +41,7 @@ export class GenerationService {
       resolution: payload.resolution || '1024x1024',
       duration: payload.duration ?? null,
       status: 'queued',
-      settings: payload.settings || {},
+      settings,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
@@ -52,6 +57,7 @@ export class GenerationService {
     const providerResult = await provider.submit({
       ...payload,
       prompt: enrichedPrompt,
+      referenceImage: payload.referenceImage || null,
       count: payload.generationCount || payload.count || 1,
       duration: payload.duration,
       type,

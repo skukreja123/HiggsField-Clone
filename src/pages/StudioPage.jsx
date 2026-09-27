@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 const defaultForm = {
   prompt: 'Cinematic luxury product shot of a premium watch resting on dark velvet with soft gold highlights and dramatic studio lighting.',
   negativePrompt: 'blurry, low detail, distorted product, text, watermark',
+  referenceImage: '',
   model: 'cinematic',
   preset: 'cinematic',
   lighting: 'soft dramatic',
@@ -35,19 +36,46 @@ export function StudioPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [generations, setGenerations] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedGenerationId, setSelectedGenerationId] = useState(null);
+  const [selectedOutputId, setSelectedOutputId] = useState(null);
+
+  const resolveSelectedOutputId = (generation, fallbackOutputId = null) => {
+    if (!generation) return null;
+    const outputs = generation.outputs || [];
+    if (fallbackOutputId && outputs.some((item) => item.id === fallbackOutputId)) {
+      return fallbackOutputId;
+    }
+
+    if (generation.selectedOutput) {
+      const selectedValue = generation.selectedOutput;
+      const match = outputs.find((item) => item.id === selectedValue || item.url === selectedValue || item.thumbnailUrl === selectedValue);
+      if (match) return match.id;
+    }
+
+    return outputs[0]?.id || null;
+  };
 
   const currentGeneration = useMemo(
-    () => generations.find((item) => item.id === selectedId) || generations[0] || null,
-    [generations, selectedId],
+    () => generations.find((item) => item.id === selectedGenerationId) || generations[0] || null,
+    [generations, selectedGenerationId],
   );
+
+  const selectedMedia = currentGeneration?.outputs || [];
+  const featuredOutput = selectedMedia.find((item) => item.id === selectedOutputId) || selectedMedia[0] || null;
 
   const fetchGenerations = async () => {
     try {
       const response = await apiRequest('/generations');
-      setGenerations(response.generations || []);
-      if (response.generations?.length) {
-        setSelectedId((current) => current || response.generations[0].id);
+      const nextGenerations = response.generations || [];
+      setGenerations(nextGenerations);
+
+      if (nextGenerations.length) {
+        const nextGeneration = nextGenerations.find((item) => item.id === selectedGenerationId) || nextGenerations[0];
+        setSelectedGenerationId(nextGeneration.id);
+        setSelectedOutputId(resolveSelectedOutputId(nextGeneration, selectedOutputId));
+      } else {
+        setSelectedGenerationId(null);
+        setSelectedOutputId(null);
       }
     } catch (loadError) {
       setError(loadError.message || 'Unable to load your generation history.');
@@ -68,6 +96,20 @@ export function StudioPage() {
     }));
   };
 
+  const handleReferenceImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setForm((current) => ({ ...current, referenceImage: '' }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((current) => ({ ...current, referenceImage: String(reader.result || '') }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
@@ -79,7 +121,10 @@ export function StudioPage() {
         body: JSON.stringify(form),
       });
 
-      setSelectedId(response.generation?.id || null);
+      if (response.generation?.id) {
+        setSelectedGenerationId(response.generation.id);
+      }
+
       await fetchGenerations();
     } catch (submitError) {
       setError(submitError.message || 'Unable to generate your concept.');
@@ -102,7 +147,10 @@ export function StudioPage() {
         }),
       });
 
-      setSelectedId(response.generation?.id || null);
+      if (response.generation?.id) {
+        setSelectedGenerationId(response.generation.id);
+      }
+
       await fetchGenerations();
     } catch (submitError) {
       setError(submitError.message || 'Unable to generate your video concept.');
@@ -120,7 +168,6 @@ export function StudioPage() {
     }
   };
 
-  const selectedMedia = currentGeneration?.outputs || [];
   const isVideoGeneration = currentGeneration?.type === 'video';
 
   return (
@@ -141,7 +188,7 @@ export function StudioPage() {
           </div>
           <div className="summary-pill">
             <span className="summary-label">Status</span>
-            <strong>{isGenerating ? 'Generating' : 'Ready'}</strong>
+            <strong>{isGenerating ? 'Generating' : (currentGeneration?.status || 'Ready')}</strong>
           </div>
         </div>
       </header>
@@ -194,6 +241,26 @@ export function StudioPage() {
                   rows="2"
                 />
               </label>
+
+              <label className="field-group">
+                <span>Reference image</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleReferenceImageChange}
+                />
+              </label>
+
+              {form.referenceImage ? (
+                <div className="field-group">
+                  <span>Reference preview</span>
+                  <img
+                    src={form.referenceImage}
+                    alt="Reference preview"
+                    style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}
+                  />
+                </div>
+              ) : null}
 
               <div className="two-column-fields">
                 <label className="field-group">
@@ -421,9 +488,9 @@ export function StudioPage() {
             <>
               <div className="featured-output">
                 {isVideoGeneration ? (
-                  <video controls src={selectedMedia[0]?.url} poster={selectedMedia[0]?.thumbnailUrl || selectedMedia[0]?.url} />
+                  <video controls src={featuredOutput?.url} poster={featuredOutput?.thumbnailUrl || featuredOutput?.url} />
                 ) : (
-                  <img src={selectedMedia[0]?.url} alt={selectedMedia[0]?.prompt || 'Generated output'} />
+                  <img src={featuredOutput?.url} alt={featuredOutput?.prompt || 'Generated output'} />
                 )}
               </div>
 
@@ -432,8 +499,11 @@ export function StudioPage() {
                   <button
                     key={item.id}
                     type="button"
-                    className={`result-thumb ${currentGeneration?.selectedOutput?.id === item.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedId(currentGeneration.id)}
+                    className={`result-thumb ${selectedOutputId === item.id ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedGenerationId(currentGeneration.id);
+                      setSelectedOutputId(item.id);
+                    }}
                     aria-label="Select output"
                   >
                     {isVideoGeneration ? (
@@ -446,10 +516,10 @@ export function StudioPage() {
               </div>
 
               <div className="result-actions">
-                {selectedMedia[0] ? (
+                {featuredOutput ? (
                   <a
                     className="secondary-button result-link"
-                    href={selectedMedia[0].url}
+                    href={featuredOutput.url}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -479,7 +549,10 @@ export function StudioPage() {
         <div className="history-grid">
           {generations.length ? (
             generations.slice(0, 6).map((generation) => (
-              <article key={generation.id} className="history-card" onClick={() => setSelectedId(generation.id)}>
+              <article key={generation.id} className="history-card" onClick={() => {
+                setSelectedGenerationId(generation.id);
+                setSelectedOutputId(resolveSelectedOutputId(generation));
+              }}>
                 {generation.type === 'video' ? (
                   <video
                     src={generation.outputs?.[0]?.url}

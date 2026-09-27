@@ -7,7 +7,7 @@ export class VideoGenerationProvider extends BaseGenerationProvider {
   }
 
   async submit(payload) {
-    const videoUrl = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+    const videoUrl = 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-luxury-resort-4446-large.mp4';
 
     return {
       id: `video-${Date.now()}`,
@@ -48,7 +48,7 @@ export class VideoGenerationProvider extends BaseGenerationProvider {
       outputs: [
         {
           id: `video-output-${generationId}`,
-          url: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+          url: 'https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-luxury-resort-4446-large.mp4',
           thumbnailUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
           type: 'video',
         },

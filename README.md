@@ -14,6 +14,12 @@ This project simulates a premium AI creative platform where users can:
 
 The app is designed to be practical for a 24-hour assignment while still keeping the architecture extensible.
 
+## Live deployment
+
+- Frontend (Vercel): https://higgsfield-mu.vercel.app
+- Backend API (Render): https://higgsfield-clone.onrender.com
+- Health check: https://higgsfield-clone.onrender.com/api/health
+
 ## Tech Stack
 
 - Frontend: React 19 + Vite
