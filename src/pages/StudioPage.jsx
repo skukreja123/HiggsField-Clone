@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -63,7 +63,7 @@ export function StudioPage() {
   const selectedMedia = currentGeneration?.outputs || [];
   const featuredOutput = selectedMedia.find((item) => item.id === selectedOutputId) || selectedMedia[0] || null;
 
-  const fetchGenerations = async () => {
+  const fetchGenerations = useCallback(async () => {
     try {
       const response = await apiRequest('/generations');
       const nextGenerations = response.generations || [];
@@ -82,11 +82,12 @@ export function StudioPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedGenerationId, selectedOutputId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchGenerations();
-  }, []);
+  }, [fetchGenerations]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;

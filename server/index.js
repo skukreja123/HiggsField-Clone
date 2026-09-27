@@ -8,6 +8,10 @@ import { GenerationService } from './services/GenerationService.js';
 const app = express();
 const generationService = new GenerationService();
 
+if (config.isProduction && !config.useSupabase) {
+  throw new Error('Production requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Local JSON fallback is not allowed in production.');
+}
+
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((value) => value.trim())
@@ -279,7 +283,7 @@ app.post('/api/generations/:id/regenerate', authMiddleware, async (req, res) => 
   }
 });
 
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res) => {
   console.error(err);
   return sendError(res, 500, 'Internal server error.');
 });
