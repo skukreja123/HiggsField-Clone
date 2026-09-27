@@ -171,9 +171,22 @@ export const generationRepository = {
       return normalizeGeneration(merged);
     }
 
+    const payload = {};
+    Object.entries(updates || {}).forEach(([key, value]) => {
+      if (key === 'userId') payload.user_id = value;
+      else if (key === 'negativePrompt') payload.negative_prompt = value;
+      else if (key === 'aspectRatio') payload.aspect_ratio = value;
+      else if (key === 'createdAt') payload.created_at = value;
+      else if (key === 'updatedAt') payload.updated_at = value;
+      else if (key === 'thumbnailUrl') payload.thumbnail_url = value;
+      else if (key === 'assetUrl') payload.asset_url = value;
+      else if (key === 'generationId') payload.generation_id = value;
+      else payload[key] = value;
+    });
+
     const { data, error } = await supabase
       .from('generations')
-      .update(updates)
+      .update(payload)
       .eq('id', id)
       .select('*')
       .single();

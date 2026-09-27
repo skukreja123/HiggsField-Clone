@@ -13,9 +13,19 @@ const defaultForm = {
   generationCount: 1,
 };
 
+const defaultVideoForm = {
+  prompt: 'A cinematic drone shot of a luxury hotel at sunset with dramatic lighting and smooth motion.',
+  model: 'gen3',
+  aspectRatio: '16:9',
+  resolution: '1920x1080',
+  duration: 8,
+};
+
 export function StudioPage() {
   const { user } = useAuth();
+  const [studioMode, setStudioMode] = useState('image');
   const [form, setForm] = useState(defaultForm);
+  const [videoForm, setVideoForm] = useState(defaultVideoForm);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
@@ -73,6 +83,29 @@ export function StudioPage() {
     }
   };
 
+  const handleVideoSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setIsGenerating(true);
+
+    try {
+      const response = await apiRequest('/generations', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...videoForm,
+          type: 'video',
+        }),
+      });
+
+      setSelectedId(response.generation?.id || null);
+      await fetchGenerations();
+    } catch (submitError) {
+      setError(submitError.message || 'Unable to generate your video concept.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleRegenerate = async (id) => {
     try {
       await apiRequest(`/generations/${id}/regenerate`, { method: 'POST' });
@@ -82,7 +115,8 @@ export function StudioPage() {
     }
   };
 
-  const selectedImages = currentGeneration?.outputs || [];
+  const selectedMedia = currentGeneration?.outputs || [];
+  const isVideoGeneration = currentGeneration?.type === 'video';
 
   return (
     <div className="studio-page-shell">
@@ -98,102 +132,193 @@ export function StudioPage() {
           <div className="panel-header">
             <div>
               <p className="eyebrow">New generation</p>
-              <h2>Image AI studio</h2>
+              <h2>{studioMode === 'image' ? 'Image AI studio' : 'Video AI studio'}</h2>
             </div>
           </div>
 
-          <form className="generation-form" onSubmit={handleSubmit}>
-            <label className="field-group">
-              <span>Prompt</span>
-              <textarea
-                name="prompt"
-                value={form.prompt}
-                onChange={handleChange}
-                rows="5"
-                required
-              />
-            </label>
-
-            <label className="field-group">
-              <span>Negative prompt</span>
-              <textarea
-                name="negativePrompt"
-                value={form.negativePrompt}
-                onChange={handleChange}
-                rows="2"
-              />
-            </label>
-
-            <div className="two-column-fields">
-              <label className="field-group">
-                <span>Model</span>
-                <select name="model" value={form.model} onChange={handleChange}>
-                  <option value="cinematic">Cinematic</option>
-                  <option value="editorial">Editorial</option>
-                  <option value="product">Product</option>
-                  <option value="concept">Concept</option>
-                </select>
-              </label>
-
-              <label className="field-group">
-                <span>Preset</span>
-                <select name="preset" value={form.preset} onChange={handleChange}>
-                  <option value="premium">Premium</option>
-                  <option value="minimal">Minimal</option>
-                  <option value="moody">Moody</option>
-                  <option value="vivid">Vivid</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="two-column-fields">
-              <label className="field-group">
-                <span>Aspect ratio</span>
-                <select name="aspectRatio" value={form.aspectRatio} onChange={handleChange}>
-                  <option value="16:9">16:9</option>
-                  <option value="1:1">1:1</option>
-                  <option value="4:5">4:5</option>
-                  <option value="9:16">9:16</option>
-                </select>
-              </label>
-
-              <label className="field-group">
-                <span>Resolution</span>
-                <select name="resolution" value={form.resolution} onChange={handleChange}>
-                  <option value="1024x1024">1024 × 1024</option>
-                  <option value="1536x1024">1536 × 1024</option>
-                  <option value="1024x1536">1024 × 1536</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="two-column-fields">
-              <label className="field-group">
-                <span>Quality</span>
-                <select name="quality" value={form.quality} onChange={handleChange}>
-                  <option value="draft">Draft</option>
-                  <option value="high">High</option>
-                  <option value="ultra">Ultra</option>
-                </select>
-              </label>
-
-              <label className="field-group">
-                <span>Count</span>
-                <select name="generationCount" value={form.generationCount} onChange={handleChange}>
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                  <option value={4}>4</option>
-                </select>
-              </label>
-            </div>
-
-            {error ? <div className="form-message error">{error}</div> : null}
-
-            <button type="submit" className="primary-button full-width" disabled={isGenerating}>
-              {isGenerating ? 'Generating…' : 'Generate concept'}
+          <div className="studio-mode-toggle" role="tablist" aria-label="Studio type selector">
+            <button
+              type="button"
+              className={`studio-mode-button ${studioMode === 'image' ? 'active' : ''}`}
+              onClick={() => setStudioMode('image')}
+            >
+              Image
             </button>
-          </form>
+            <button
+              type="button"
+              className={`studio-mode-button ${studioMode === 'video' ? 'active' : ''}`}
+              onClick={() => setStudioMode('video')}
+            >
+              Video
+            </button>
+          </div>
+
+          {studioMode === 'image' ? (
+            <form className="generation-form" onSubmit={handleSubmit}>
+              <label className="field-group">
+                <span>Prompt</span>
+                <textarea
+                  name="prompt"
+                  value={form.prompt}
+                  onChange={handleChange}
+                  rows="5"
+                  required
+                />
+              </label>
+
+              <label className="field-group">
+                <span>Negative prompt</span>
+                <textarea
+                  name="negativePrompt"
+                  value={form.negativePrompt}
+                  onChange={handleChange}
+                  rows="2"
+                />
+              </label>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Model</span>
+                  <select name="model" value={form.model} onChange={handleChange}>
+                    <option value="cinematic">Cinematic</option>
+                    <option value="editorial">Editorial</option>
+                    <option value="product">Product</option>
+                    <option value="concept">Concept</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Preset</span>
+                  <select name="preset" value={form.preset} onChange={handleChange}>
+                    <option value="premium">Premium</option>
+                    <option value="minimal">Minimal</option>
+                    <option value="moody">Moody</option>
+                    <option value="vivid">Vivid</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Aspect ratio</span>
+                  <select name="aspectRatio" value={form.aspectRatio} onChange={handleChange}>
+                    <option value="16:9">16:9</option>
+                    <option value="1:1">1:1</option>
+                    <option value="4:5">4:5</option>
+                    <option value="9:16">9:16</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Resolution</span>
+                  <select name="resolution" value={form.resolution} onChange={handleChange}>
+                    <option value="1024x1024">1024 × 1024</option>
+                    <option value="1536x1024">1536 × 1024</option>
+                    <option value="1024x1536">1024 × 1536</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Quality</span>
+                  <select name="quality" value={form.quality} onChange={handleChange}>
+                    <option value="draft">Draft</option>
+                    <option value="high">High</option>
+                    <option value="ultra">Ultra</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Count</span>
+                  <select name="generationCount" value={form.generationCount} onChange={handleChange}>
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                  </select>
+                </label>
+              </div>
+
+              {error ? <div className="form-message error">{error}</div> : null}
+
+              <button type="submit" className="primary-button full-width" disabled={isGenerating}>
+                {isGenerating ? 'Generating…' : 'Generate concept'}
+              </button>
+            </form>
+          ) : (
+            <form className="generation-form" onSubmit={handleVideoSubmit}>
+              <label className="field-group">
+                <span>Video prompt</span>
+                <textarea
+                  name="videoPrompt"
+                  value={videoForm.prompt}
+                  onChange={(event) => setVideoForm((current) => ({ ...current, prompt: event.target.value }))}
+                  rows="5"
+                  required
+                />
+              </label>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Model</span>
+                  <select
+                    value={videoForm.model}
+                    onChange={(event) => setVideoForm((current) => ({ ...current, model: event.target.value }))}
+                  >
+                    <option value="gen3">Gen 3</option>
+                    <option value="motion">Motion</option>
+                    <option value="cinematic">Cinematic</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Duration</span>
+                  <select
+                    value={videoForm.duration}
+                    onChange={(event) => setVideoForm((current) => ({ ...current, duration: Number(event.target.value) }))}
+                  >
+                    <option value={4}>4s</option>
+                    <option value={8}>8s</option>
+                    <option value={12}>12s</option>
+                    <option value={16}>16s</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Aspect ratio</span>
+                  <select
+                    value={videoForm.aspectRatio}
+                    onChange={(event) => setVideoForm((current) => ({ ...current, aspectRatio: event.target.value }))}
+                  >
+                    <option value="16:9">16:9</option>
+                    <option value="9:16">9:16</option>
+                    <option value="1:1">1:1</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Resolution</span>
+                  <select
+                    value={videoForm.resolution}
+                    onChange={(event) => setVideoForm((current) => ({ ...current, resolution: event.target.value }))}
+                  >
+                    <option value="1920x1080">1920 × 1080</option>
+                    <option value="1280x720">1280 × 720</option>
+                    <option value="1024x576">1024 × 576</option>
+                  </select>
+                </label>
+              </div>
+
+              {error ? <div className="form-message error">{error}</div> : null}
+
+              <button type="submit" className="primary-button full-width" disabled={isGenerating}>
+                {isGenerating ? 'Preparing…' : 'Generate video'}
+              </button>
+            </form>
+          )}
         </section>
 
         <aside className="results-panel">
@@ -206,33 +331,41 @@ export function StudioPage() {
 
           {isLoading ? (
             <div className="state-box">Loading your image history…</div>
-          ) : !selectedImages.length ? (
+          ) : !selectedMedia.length ? (
             <div className="state-box">No generations yet. Build a concept to populate this space.</div>
           ) : (
             <>
               <div className="featured-output">
-                <img src={selectedImages[0]?.url} alt={selectedImages[0]?.prompt || 'Generated output'} />
+                {isVideoGeneration ? (
+                  <video controls src={selectedMedia[0]?.url} poster={selectedMedia[0]?.thumbnailUrl || selectedMedia[0]?.url} />
+                ) : (
+                  <img src={selectedMedia[0]?.url} alt={selectedMedia[0]?.prompt || 'Generated output'} />
+                )}
               </div>
 
               <div className="result-grid">
-                {selectedImages.map((image) => (
+                {selectedMedia.map((item) => (
                   <button
-                    key={image.id}
+                    key={item.id}
                     type="button"
-                    className={`result-thumb ${currentGeneration?.selectedOutput?.id === image.id ? 'selected' : ''}`}
+                    className={`result-thumb ${currentGeneration?.selectedOutput?.id === item.id ? 'selected' : ''}`}
                     onClick={() => setSelectedId(currentGeneration.id)}
                     aria-label="Select output"
                   >
-                    <img src={image.url} alt="Generated visual" />
+                    {isVideoGeneration ? (
+                      <video controls src={item.url} poster={item.thumbnailUrl || item.url} />
+                    ) : (
+                      <img src={item.url} alt="Generated visual" />
+                    )}
                   </button>
                 ))}
               </div>
 
               <div className="result-actions">
-                {selectedImages[0] ? (
+                {selectedMedia[0] ? (
                   <a
                     className="secondary-button result-link"
-                    href={selectedImages[0].url}
+                    href={selectedMedia[0].url}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -263,11 +396,20 @@ export function StudioPage() {
           {generations.length ? (
             generations.slice(0, 6).map((generation) => (
               <article key={generation.id} className="history-card" onClick={() => setSelectedId(generation.id)}>
-                <img src={generation.outputs?.[0]?.url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80'} alt={generation.prompt} />
+                {generation.type === 'video' ? (
+                  <video
+                    src={generation.outputs?.[0]?.url}
+                    poster={generation.outputs?.[0]?.thumbnailUrl || generation.outputs?.[0]?.url}
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img src={generation.outputs?.[0]?.url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80'} alt={generation.prompt} />
+                )}
                 <div className="history-content">
                   <strong>{generation.model}</strong>
                   <p>{generation.prompt}</p>
-                  <span>{new Date(generation.createdAt).toLocaleDateString()}</span>
+                  <span>{generation.type === 'video' ? 'Video generation' : 'Image generation'} · {new Date(generation.createdAt).toLocaleDateString()}</span>
                 </div>
               </article>
             ))

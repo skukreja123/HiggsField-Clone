@@ -122,6 +122,7 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
 });
 
 const parseGenerationRequest = (body) => {
+  const type = body.type === 'video' ? 'video' : 'image';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
   if (!prompt) {
     throw new Error('Prompt is required.');
@@ -129,13 +130,15 @@ const parseGenerationRequest = (body) => {
 
   return {
     prompt,
+    type,
     negativePrompt: typeof body.negativePrompt === 'string' ? body.negativePrompt.trim() : '',
     referenceImage: typeof body.referenceImage === 'string' ? body.referenceImage : '',
-    model: body.model || 'cinematic',
+    model: body.model || (type === 'video' ? 'gen3' : 'cinematic'),
     preset: body.preset || 'premium',
-    aspectRatio: body.aspectRatio || '16:9',
-    resolution: body.resolution || '1024x1024',
+    aspectRatio: body.aspectRatio || (type === 'video' ? '16:9' : '16:9'),
+    resolution: body.resolution || (type === 'video' ? '1920x1080' : '1024x1024'),
     quality: body.quality || 'high',
+    duration: body.duration ?? (type === 'video' ? 8 : null),
     generationCount: Math.min(Math.max(Number(body.generationCount || 1), 1), 4),
     styleSettings: body.styleSettings || {},
   };
@@ -146,7 +149,7 @@ app.post('/api/generations', authMiddleware, async (req, res) => {
     const request = parseGenerationRequest(req.body || {});
     const result = await generationService.submitGeneration({
       userId: Number(req.user.id),
-      type: 'image',
+      type: request.type,
       ...request,
     });
 
@@ -195,12 +198,13 @@ app.post('/api/generations/:id/regenerate', authMiddleware, async (req, res) => 
       aspectRatio: existing.aspectRatio || '16:9',
       resolution: existing.resolution || '1024x1024',
       generationCount: existing.generationCount || existing.settings?.generationCount || 1,
+      duration: existing.duration ?? null,
       settings: existing.settings || {},
     };
 
     const result = await generationService.submitGeneration({
       userId: Number(req.user.id),
-      type: 'image',
+      type: existing.type === 'video' ? 'video' : 'image',
       ...request,
     });
 

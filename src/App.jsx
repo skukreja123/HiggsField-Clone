@@ -6,7 +6,13 @@ import { RegisterPage } from './pages/RegisterPage';
 import { StudioPage } from './pages/StudioPage';
 import './App.css';
 
-const navItems = ['Home', 'Studio', 'Explore', 'Pricing', 'Blog'];
+const navItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Studio', href: '/studio' },
+  { label: 'Explore', href: '#inspiration' },
+  { label: 'Pricing', href: '#pricing' },
+  { label: 'Blog', href: '#community' },
+];
 
 const stats = [
   { value: '150K+', label: 'creators' },
@@ -85,11 +91,17 @@ function NavBar() {
 
       <nav className="main-nav" aria-label="Main navigation">
         {navItems.map((item) => {
-          const href = item === 'Home' ? '/' : item === 'Studio' ? '/studio' : '#';
+          if (item.href.startsWith('#')) {
+            return (
+              <a key={item.label} href={item.href} className="nav-link">
+                {item.label}
+              </a>
+            );
+          }
 
           return (
-            <Link key={item} to={href} className="nav-link" onClick={(event) => href === '#' && event.preventDefault()}>
-              {item}
+            <Link key={item.label} to={item.href} className="nav-link">
+              {item.label}
             </Link>
           );
         })}
@@ -220,7 +232,7 @@ function LandingPage() {
           </div>
         </section>
 
-        <section className="inspiration-section">
+        <section id="inspiration" className="inspiration-section">
           <SectionHeading
             eyebrow="Inspiration gallery"
             title="Campaigns that feel shot on a dream."
@@ -281,6 +293,53 @@ function LandingPage() {
           </div>
         </section>
 
+        <section id="pricing" className="pricing-section">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Pricing</p>
+              <h3>Choose the creative plan that matches your pace.</h3>
+            </div>
+          </div>
+
+          <div className="pricing-grid">
+            <article className="pricing-card">
+              <span className="pricing-tier">Starter</span>
+              <h4>$29<span>/mo</span></h4>
+              <p>For solo creators shipping fast product motion.</p>
+              <ul>
+                <li>200 AI renders</li>
+                <li>5 active projects</li>
+                <li>Prompt presets</li>
+              </ul>
+              <button type="button" className="secondary-button full-width">Get started</button>
+            </article>
+
+            <article className="pricing-card popular">
+              <span className="pricing-tier">Growth</span>
+              <h4>$79<span>/mo</span></h4>
+              <p>For marketing teams building launch campaigns weekly.</p>
+              <ul>
+                <li>Unlimited concept boards</li>
+                <li>Brand kit sync</li>
+                <li>Faster iterative renders</li>
+              </ul>
+              <button type="button" className="primary-button full-width">Start trial</button>
+            </article>
+
+            <article className="pricing-card">
+              <span className="pricing-tier">Studio</span>
+              <h4>$199<span>/mo</span></h4>
+              <p>For agencies and product orgs shipping cinematic creative at scale.</p>
+              <ul>
+                <li>Custom workflows</li>
+                <li>Priority support</li>
+                <li>Advanced team sharing</li>
+              </ul>
+              <button type="button" className="secondary-button full-width">Talk to sales</button>
+            </article>
+          </div>
+        </section>
+
         <section className="cinema-section">
           <div className="cinema-intro">
             <div>
@@ -308,7 +367,7 @@ function LandingPage() {
           </div>
         </section>
 
-        <section className="community-section">
+        <section id="community" className="community-section">
           <div className="community-heading">
             <div>
               <p className="eyebrow">Community</p>
