@@ -8,6 +8,21 @@ export class GenerationService {
     this.videoProvider = new VideoGenerationProvider();
   }
 
+  buildCreativePrompt(prompt, { model, preset, styleSettings = {} } = {}) {
+    const parts = [prompt?.trim()].filter(Boolean);
+    const styleParts = [];
+
+    if (styleSettings.lighting) styleParts.push(`${styleSettings.lighting} lighting`);
+    if (styleSettings.mood) styleParts.push(styleSettings.mood);
+    if (styleSettings.background) styleParts.push(`background: ${styleSettings.background}`);
+    if (styleSettings.camera) styleParts.push(`camera angle: ${styleSettings.camera}`);
+    if (styleSettings.subject) styleParts.push(styleSettings.subject);
+    if (preset) styleParts.push(preset);
+    if (model) styleParts.push(model);
+
+    return [...new Set([...parts, ...styleParts])].join(', ');
+  }
+
   async submitGeneration({ userId, type = 'image', ...payload }) {
     const provider = type === 'video' ? this.videoProvider : this.imageProvider;
 
@@ -26,8 +41,17 @@ export class GenerationService {
       updatedAt: new Date().toISOString(),
     });
 
+    const enrichedPrompt = type === 'video'
+      ? payload.prompt
+      : this.buildCreativePrompt(payload.prompt, {
+          model: payload.model,
+          preset: payload.preset,
+          styleSettings: payload.styleSettings || {},
+        });
+
     const providerResult = await provider.submit({
       ...payload,
+      prompt: enrichedPrompt,
       count: payload.generationCount || payload.count || 1,
       duration: payload.duration,
       type,

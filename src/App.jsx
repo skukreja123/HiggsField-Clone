@@ -214,6 +214,16 @@ function LandingPage() {
                 </div>
               ))}
             </div>
+
+            <div className="trust-strip" aria-label="Trusted by brands">
+              <span className="trust-label">Trusted by launch teams</span>
+              <div className="trust-pill-row">
+                <span>Northstar</span>
+                <span>Vanta</span>
+                <span>Horizon</span>
+                <span>Nova</span>
+              </div>
+            </div>
           </div>
 
           <div className="hero-visual" aria-label="Featured campaign visual">
@@ -229,6 +239,24 @@ function LandingPage() {
               <div className="mini-card mini-top" />
               <div className="mini-card mini-bottom" />
             </div>
+          </div>
+        </section>
+
+        <section className="workflow-band" aria-label="How the platform works">
+          <div className="workflow-step">
+            <span>01</span>
+            <strong>Describe</strong>
+            <p>Brief your brand mood, product, and visual direction.</p>
+          </div>
+          <div className="workflow-step">
+            <span>02</span>
+            <strong>Generate</strong>
+            <p>Turn prompts into cinematic concepts, brand frames, and motion ideas.</p>
+          </div>
+          <div className="workflow-step">
+            <span>03</span>
+            <strong>Launch</strong>
+            <p>Refine the strongest scene and ship it across campaigns.</p>
           </div>
         </section>
 

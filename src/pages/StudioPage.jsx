@@ -6,7 +6,12 @@ const defaultForm = {
   prompt: 'Cinematic luxury product shot of a premium watch resting on dark velvet with soft gold highlights and dramatic studio lighting.',
   negativePrompt: 'blurry, low detail, distorted product, text, watermark',
   model: 'cinematic',
-  preset: 'premium',
+  preset: 'cinematic',
+  lighting: 'soft dramatic',
+  mood: 'luxury',
+  background: 'studio backdrop',
+  camera: 'eye-level',
+  subject: 'premium product',
   aspectRatio: '16:9',
   resolution: '1024x1024',
   quality: 'high',
@@ -125,6 +130,20 @@ export function StudioPage() {
           <p className="eyebrow">Creative dashboard</p>
           <h1>Welcome back, {user?.name || 'creator'}.</h1>
         </div>
+        <div className="studio-summary-row" aria-label="Studio summary">
+          <div className="summary-pill">
+            <span className="summary-label">Mode</span>
+            <strong>{studioMode === 'image' ? 'Image AI' : 'Video AI'}</strong>
+          </div>
+          <div className="summary-pill">
+            <span className="summary-label">Outputs</span>
+            <strong>{selectedMedia.length || 0}</strong>
+          </div>
+          <div className="summary-pill">
+            <span className="summary-label">Status</span>
+            <strong>{isGenerating ? 'Generating' : 'Ready'}</strong>
+          </div>
+        </div>
       </header>
 
       <div className="studio-layout-grid">
@@ -190,10 +209,75 @@ export function StudioPage() {
                 <label className="field-group">
                   <span>Preset</span>
                   <select name="preset" value={form.preset} onChange={handleChange}>
-                    <option value="premium">Premium</option>
+                    <option value="cinematic">Cinematic</option>
+                    <option value="photographic">Photographic</option>
+                    <option value="digital-art">Digital Art</option>
+                    <option value="enhance">Enhance</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Lighting</span>
+                  <select name="lighting" value={form.lighting} onChange={handleChange}>
+                    <option value="soft dramatic">Soft dramatic</option>
+                    <option value="golden hour">Golden hour</option>
+                    <option value="studio glow">Studio glow</option>
+                    <option value="neon">Neon</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Mood</span>
+                  <select name="mood" value={form.mood} onChange={handleChange}>
+                    <option value="luxury">Luxury</option>
+                    <option value="editorial">Editorial</option>
+                    <option value="futuristic">Futuristic</option>
                     <option value="minimal">Minimal</option>
-                    <option value="moody">Moody</option>
-                    <option value="vivid">Vivid</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Background</span>
+                  <select name="background" value={form.background} onChange={handleChange}>
+                    <option value="studio backdrop">Studio backdrop</option>
+                    <option value="dark luxury interior">Dark luxury interior</option>
+                    <option value="clean neutral studio">Clean neutral studio</option>
+                    <option value="outdoor cityscape">Outdoor cityscape</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Camera</span>
+                  <select name="camera" value={form.camera} onChange={handleChange}>
+                    <option value="eye-level">Eye level</option>
+                    <option value="low angle">Low angle</option>
+                    <option value="overhead">Overhead</option>
+                    <option value="wide shot">Wide shot</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="two-column-fields">
+                <label className="field-group">
+                  <span>Subject focus</span>
+                  <select name="subject" value={form.subject} onChange={handleChange}>
+                    <option value="premium product">Premium product</option>
+                    <option value="fashion portrait">Fashion portrait</option>
+                    <option value="architectural detail">Architectural detail</option>
+                    <option value="lifestyle scene">Lifestyle scene</option>
+                  </select>
+                </label>
+
+                <label className="field-group">
+                  <span>Quality</span>
+                  <select name="quality" value={form.quality} onChange={handleChange}>
+                    <option value="draft">Draft</option>
+                    <option value="high">High</option>
+                    <option value="ultra">Ultra</option>
                   </select>
                 </label>
               </div>

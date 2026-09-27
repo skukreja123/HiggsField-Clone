@@ -6,7 +6,7 @@ export const config = {
   port: Number(process.env.PORT || 4000),
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-me',
   sessionTtl: Number(process.env.SESSION_TTL || 86400),
-  imageProvider: process.env.IMAGE_PROVIDER || 'demo',
+  imageProvider: process.env.IMAGE_PROVIDER || (process.env.STABILITY_API_KEY ? 'stability' : 'demo'),
   videoProvider: process.env.VIDEO_PROVIDER || 'demo',
   stabilityApiKey: process.env.STABILITY_API_KEY || '',
   stabilityApiUrl: process.env.STABILITY_API_URL || 'https://api.stability.ai',

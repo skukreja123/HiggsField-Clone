@@ -23,38 +23,92 @@ export class StabilityImageProvider extends BaseGenerationProvider {
 
   async submit(payload) {
     if (!this.apiKey) {
-      throw new Error('Stability API key is not configured.');
+      return new DemoImageProvider().submit(payload);
     }
 
-    const response = await fetch(`${this.baseUrl}/v2beta/stable-image/generate/core`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: payload.prompt,
-        negative_prompt: payload.negativePrompt || '',
-        width: payload.width || 1024,
-        height: payload.height || 1024,
-        samples: payload.count || 1,
-      }),
-    });
+    const allowedStyles = new Set([
+      'enhance',
+      'anime',
+      'photographic',
+      'digital-art',
+      'comic-book',
+      'fantasy-art',
+      'line-art',
+      'analog-film',
+      'neon-punk',
+      'isometric',
+      'low-poly',
+      'origami',
+      'modeling-compound',
+      'cinematic',
+      '3d-model',
+      'pixel-art',
+      'tile-texture',
+    ]);
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Provider request failed: ${response.status} ${text}`);
+    const fallback = () => new DemoImageProvider().submit(payload);
+
+    try {
+      const formData = new FormData();
+      formData.append('prompt', payload.prompt || '');
+      formData.append('negative_prompt', payload.negativePrompt || '');
+      formData.append('aspect_ratio', payload.aspectRatio || '1:1');
+      formData.append('style_preset', allowedStyles.has(payload.preset) ? payload.preset : 'cinematic');
+      formData.append('output_format', 'png');
+      formData.append('samples', String(payload.count || 1));
+
+      const width = payload.width || Number((payload.resolution || '1024x1024').split('x')[0]) || 1024;
+      const height = payload.height || Number((payload.resolution || '1024x1024').split('x')[1]) || 1024;
+      formData.append('width', String(width));
+      formData.append('height', String(height));
+
+      const response = await fetch(`${this.baseUrl}/v2beta/stable-image/generate/core`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          Accept: 'application/json',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        const message = text || response.statusText || '';
+        if (response.status === 402 || response.status === 401 || response.status === 403 || response.status === 429 || /credit|payment|insufficient/i.test(message)) {
+          return fallback();
+        }
+        throw new Error(`Provider request failed: ${response.status} ${message}`);
+      }
+
+      const data = await response.json();
+      const artifacts = Array.isArray(data.artifacts) ? data.artifacts : [data];
+      const outputs = artifacts.map((artifact, index) => {
+        const base64 = artifact.base64 || artifact.image || artifact.url || '';
+        const url = base64.startsWith('data:') ? base64 : base64 ? `data:image/png;base64,${base64}` : '';
+
+        return {
+          id: artifact.seed || `stability-${Date.now()}-${index}`,
+          url,
+          thumbnailUrl: url,
+        };
+      }).filter((output) => output.url);
+
+      if (!outputs.length) {
+        return fallback();
+      }
+
+      return {
+        status: 'completed',
+        provider: 'stability',
+        outputs,
+      };
+    } catch (error) {
+      const message = String(error?.message || '');
+      if (/credit|payment|insufficient|402|401|403|429|fetch/i.test(message)) {
+        return fallback();
+      }
+      throw error;
     }
-
-    const data = await response.json();
-    return {
-      status: 'completed',
-      provider: 'stability',
-      outputs: Array.isArray(data.artifacts) ? data.artifacts.map((artifact) => ({
-        id: artifact.seed || crypto.randomUUID(),
-        url: artifact.base64 || artifact.url || '',
-      })) : [],
-    };
   }
 
   async getStatus() {

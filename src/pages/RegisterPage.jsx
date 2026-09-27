@@ -1,7 +1,28 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthShell } from '../components/AuthShell';
 import { useAuth } from '../contexts/AuthContext';
+
+const passwordRequirements = [
+  { label: '8+ characters', test: (value) => value.length >= 8 },
+  { label: 'Uppercase', test: (value) => /[A-Z]/.test(value) },
+  { label: 'Lowercase', test: (value) => /[a-z]/.test(value) },
+  { label: 'Number', test: (value) => /\d/.test(value) },
+  { label: 'Symbol', test: (value) => /[^A-Za-z0-9]/.test(value) },
+];
+
+const getPasswordChecks = (value) => passwordRequirements.map((rule) => ({
+  ...rule,
+  valid: rule.test(value),
+}));
+
+const getPasswordStrength = (value) => {
+  const checks = getPasswordChecks(value).filter((rule) => rule.valid).length;
+  if (!value) return { label: 'No password yet', width: 0, level: 'empty' };
+  if (checks <= 2) return { label: 'Weak', width: 35, level: 'weak' };
+  if (checks === 3 || checks === 4) return { label: 'Good', width: 70, level: 'good' };
+  return { label: 'Strong', width: 100, level: 'strong' };
+};
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -14,6 +35,8 @@ export function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const passwordChecks = useMemo(() => getPasswordChecks(form.password), [form.password]);
+  const passwordStrength = useMemo(() => getPasswordStrength(form.password), [form.password]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -82,6 +105,26 @@ export function RegisterPage() {
             required
           />
         </label>
+
+        {form.password ? (
+          <div className="password-panel">
+            <div className="password-strength-header">
+              <span>Password strength</span>
+              <strong className={`strength-${passwordStrength.level}`}>{passwordStrength.label}</strong>
+            </div>
+            <div className="password-meter" aria-label="Password strength meter">
+              <span className={`meter-fill ${passwordStrength.level}`} style={{ width: `${passwordStrength.width}%` }} />
+            </div>
+            <ul className="password-rules">
+              {passwordChecks.map((rule) => (
+                <li key={rule.label} className={rule.valid ? 'pass' : ''}>
+                  <span className="rule-dot" aria-hidden="true" />
+                  {rule.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <label className="field-group">
           <span>Confirm password</span>

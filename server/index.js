@@ -8,6 +8,29 @@ import { GenerationService } from './services/GenerationService.js';
 const app = express();
 const generationService = new GenerationService();
 
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const isAllowed = !origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin);
+
+  if (isAllowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 
@@ -32,6 +55,8 @@ const sendError = (res, status, message) => res.status(status).json({ message })
 
 const normalizeUser = ({ id, name, email }) => ({ id, name, email });
 
+const isStrongPassword = (value) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(String(value || ''));
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'higgsfield-api' });
 });
@@ -44,8 +69,12 @@ app.post('/api/auth/register', async (req, res) => {
       return sendError(res, 400, 'Name, email, password, and confirm password are required.');
     }
 
-    if (password.length < 8) {
-      return sendError(res, 400, 'Password must be at least 8 characters long.');
+    if (!isStrongPassword(password)) {
+      return sendError(
+        res,
+        400,
+        'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.',
+      );
     }
 
     if (password !== confirmPassword) {
@@ -121,6 +150,30 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   }
 });
 
+const normalizeStylePreset = (value) => {
+  const allowed = new Set([
+    'enhance',
+    'anime',
+    'photographic',
+    'digital-art',
+    'comic-book',
+    'fantasy-art',
+    'line-art',
+    'analog-film',
+    'neon-punk',
+    'isometric',
+    'low-poly',
+    'origami',
+    'modeling-compound',
+    'cinematic',
+    '3d-model',
+    'pixel-art',
+    'tile-texture',
+  ]);
+
+  return allowed.has(value) ? value : 'cinematic';
+};
+
 const parseGenerationRequest = (body) => {
   const type = body.type === 'video' ? 'video' : 'image';
   const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
@@ -128,19 +181,28 @@ const parseGenerationRequest = (body) => {
     throw new Error('Prompt is required.');
   }
 
+  const styleSettings = {
+    lighting: typeof body.lighting === 'string' ? body.lighting : 'soft dramatic',
+    mood: typeof body.mood === 'string' ? body.mood : 'luxury',
+    background: typeof body.background === 'string' ? body.background : 'studio backdrop',
+    camera: typeof body.camera === 'string' ? body.camera : 'eye-level',
+    subject: typeof body.subject === 'string' ? body.subject : '',
+    ...(body.styleSettings || {}),
+  };
+
   return {
     prompt,
     type,
     negativePrompt: typeof body.negativePrompt === 'string' ? body.negativePrompt.trim() : '',
     referenceImage: typeof body.referenceImage === 'string' ? body.referenceImage : '',
     model: body.model || (type === 'video' ? 'gen3' : 'cinematic'),
-    preset: body.preset || 'premium',
-    aspectRatio: body.aspectRatio || (type === 'video' ? '16:9' : '16:9'),
+    preset: normalizeStylePreset(body.preset || 'cinematic'),
+    aspectRatio: body.aspectRatio || '16:9',
     resolution: body.resolution || (type === 'video' ? '1920x1080' : '1024x1024'),
     quality: body.quality || 'high',
     duration: body.duration ?? (type === 'video' ? 8 : null),
     generationCount: Math.min(Math.max(Number(body.generationCount || 1), 1), 4),
-    styleSettings: body.styleSettings || {},
+    styleSettings,
   };
 };
 
